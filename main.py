@@ -25,7 +25,7 @@ class Game:
     def load_data(self):
         game_folder = path.dirname(__file__)
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'normalmap.txt'), 'rt') as f:
             for line in f:
                 self.map_data.append(line)
     
@@ -33,6 +33,8 @@ class Game:
         # initiate all variables, set up groups, instantiate classes
          self.all_sprites = pg.sprite.Group()
          self.walls = pg.sprite.Group()
+         self.coins = pg.sprite.Group()
+         self.mobs = pg.sprite.Group()
          self.player = Player(self, 10, 10)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
@@ -47,8 +49,12 @@ class Game:
                     PowerUp (self, col, row)
                 if tile == '2':
                     Passwall (self, col, row)
-                if tile == 'K':
-                    Kill (self, col, row)
+                if tile == 'C':
+                    Coin(self, col, row)
+                if tile == 'E':
+                    Mob(self, col, row)
+                
+
                      
 # Run method in game engine
     def run(self):
@@ -70,10 +76,20 @@ class Game:
             pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
         for y in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+    def draw_text(self, surface, text, size, color, x, y):
+        font_name = pg.font.match_font('arial')
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.topleft = (x*TILESIZE,y*TILESIZE)
+        surface.blit(text_surface, text_rect)
+
     def draw(self):
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
+        self.draw_text(self.screen, str(self.player.moneybag), 64, WHITE, 1, 1)
+
         pg.display.flip()
 
     
