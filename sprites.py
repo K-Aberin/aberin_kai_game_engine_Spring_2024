@@ -41,6 +41,7 @@ class Player(Sprite):
         self.y = y * TILESIZE
         self.moneybag = 0
         self.status = "none"
+        self.hitpoints = 3
         self.speed = 300
 
     #def move(self, dx=0, dy=0):
@@ -90,13 +91,17 @@ class Player(Sprite):
                 if str(hits[0].__class__.__name__) == "Coin":
                     self.moneybag += 1
                     self.speed = 300
+                    self.hitpoints += 1
                 if str(hits[0].__class__.__name__) == "Slowdowns":
-                    self.speed -= 100
+                    self.speed *= 0.6
                 if str(hits[0].__class__.__name__) == "Dies":
-                    self.kill()
+                    self.speed *= 0.9
                     self.moneybag = 0
+                    self.hitpoints -= 1
+
                 if str(hits[0].__class__.__name__) == "Powerup":
                     self.status = "breakwall"
+                    self.speed = 300
                 if str(hits[0].__class__.__name__) == "Passwall":
                     if self.status == "breakwall":
                         Passwall.kill()
@@ -119,6 +124,16 @@ class Player(Sprite):
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
+        if self.hitpoints > 3:
+            self.hitpoints = 3
+        if self.hitpoints == 3:
+            self.image.fill(GREEN)
+        if self.hitpoints == 2:
+            self.image.fill(YELLOWORANGE)
+        if self.hitpoints == 1:
+            self.image.fill(DARKRED)
+        if self.hitpoints == 0:
+            self.kill()
 
 
 class Wall(Sprite):
