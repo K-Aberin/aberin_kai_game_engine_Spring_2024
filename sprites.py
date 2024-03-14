@@ -90,6 +90,9 @@ class Player(Sprite):
                     self.speed += 200
                 if str(hits[0].__class__.__name__) == "Slowdowns":
                     self.speed -= 250
+                if str(hits[0].__class__.__name__) == "Dies":
+                    self.kill()
+                    self.moneybag = 0
                     
     
 
@@ -108,6 +111,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
+        self.collide_with_group(self.game.dies, True)
 
 
 class Wall(Sprite):
