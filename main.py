@@ -81,6 +81,7 @@ class Game:
          self.coins = pg.sprite.Group()
          self.slowdowns = pg.sprite.Group()
          self.dies = pg.sprite.Group()
+         self.powerups = pg.sprite.Group()
          self.player = Player(self, 10, 10)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
@@ -99,6 +100,8 @@ class Game:
                     Dies(self, col, row)
                 if tile == 'S':
                     Slowdowns(self, col, row)
+                if tile == 'U':
+                    Powerup(self, col, row)
                 
 
                      

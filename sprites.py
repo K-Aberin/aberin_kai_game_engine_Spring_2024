@@ -40,6 +40,7 @@ class Player(Sprite):
         self.x = x * TILESIZE
         self.y = y * TILESIZE
         self.moneybag = 0
+        self.status = "none"
         self.speed = 300
 
     #def move(self, dx=0, dy=0):
@@ -63,7 +64,7 @@ class Player(Sprite):
 
     def collide_with_walls(self, dir):
         if dir == 'x':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            hits = pg.sprite.spritecollide(self, self.game.walls, False) or pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vx > 0:
                     self.x = hits[0].rect.left - self.rect.width
@@ -72,7 +73,7 @@ class Player(Sprite):
                 self.vx = 0
                 self.rect.x = self.x
         if dir == 'y':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            hits = pg.sprite.spritecollide(self, self.game.walls, False) or pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.height
@@ -80,6 +81,7 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+            
         
     def collide_with_group(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
@@ -87,13 +89,17 @@ class Player(Sprite):
             if hits:
                 if str(hits[0].__class__.__name__) == "Coin":
                     self.moneybag += 1
-                    self.speed += 200
+                    self.speed = 300
                 if str(hits[0].__class__.__name__) == "Slowdowns":
-                    self.speed -= 250
+                    self.speed -= 100
                 if str(hits[0].__class__.__name__) == "Dies":
                     self.kill()
                     self.moneybag = 0
-                    
+                if str(hits[0].__class__.__name__) == "Powerup":
+                    self.status = "breakwall"
+                if str(hits[0].__class__.__name__) == "Passwall":
+                    if self.status == "breakwall":
+                        Passwall.kill()
     
 
     def update(self):
@@ -109,6 +115,7 @@ class Player(Sprite):
         # self.rect.x = self.x * TILESIZE
         # self.rect.y = self.y * TILESIZE
         self.collide_with_group(self.game.coins, True)
+        self.collide_with_group(self.game.powerups, True)
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
@@ -144,11 +151,25 @@ class Coin(pg.sprite.Sprite):
 
 class Passwall(Sprite):
     def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.walls
+        self.groups = game.all_sprites, game.passwalls
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(SLIGHTLYLESSYELLOW)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        
+
+class Powerup(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.powerups
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -175,7 +196,7 @@ class Slowdowns(Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(WHITE)
+        self.image.fill(LIGHTGREY)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
