@@ -1,7 +1,7 @@
 # This file was created by: Kai Aberin
 
 
-#collect coins, kill enemies
+# kill blocks, breakable walls, objects that slow player down
 
 # import necessary modules
 # my first source control edit
@@ -64,11 +64,6 @@ class Game:
         img_folder = path.join(game_folder, 'images')
         self.player_img = pg.image.load(path.join(img_folder, 'freddy32.png')).convert_alpha()
         self.map_data = []
-        '''
-        The with statement is a context manager in Python. 
-        It is used to ensure that a resource is properly closed or released 
-        after it is used. This can help to prevent errors and leaks.
-        '''
         with open(path.join(game_folder, 'map.txt'), 'rt') as f:
             for line in f:
                 print(line)
@@ -82,8 +77,10 @@ class Game:
         # initiate all variables, set up groups, instantiate classes
          self.all_sprites = pg.sprite.Group()
          self.walls = pg.sprite.Group()
+         self.passwalls = pg.sprite.Group()
          self.coins = pg.sprite.Group()
-         self.mobs = pg.sprite.Group()
+         self.slowdowns = pg.sprite.Group()
+         self.dies = pg.sprite.Group()
          self.player = Player(self, 10, 10)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
@@ -94,14 +91,14 @@ class Game:
                     Wall(self, col, row)
                 if tile == 'P':
                     self.player = Player(self, col, row)
-                if tile == 'U':
-                    PowerUp (self, col, row)
                 if tile == '2':
                     Passwall (self, col, row)
                 if tile == 'C':
                     Coin(self, col, row)
-                if tile == 'E':
-                    Mob(self, col, row)
+                if tile == 'D':
+                    Dies(self, col, row)
+                if tile == 'S':
+                    Slowdowns(self, col, row)
                 
 
                      
