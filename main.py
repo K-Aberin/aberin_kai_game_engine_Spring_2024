@@ -82,12 +82,14 @@ class Game:
          self.slowdowns = pg.sprite.Group()
          self.dies = pg.sprite.Group()
          self.powerups = pg.sprite.Group()
-         self.player = Player(self, 10, 10)
+         self.player = Player(self, 1, 1)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
          for row, tiles  in enumerate(self.map_data):
              #print(self.map_data)
              for col, tile in enumerate(tiles):
+                if tile == '.':
+                    pass
                 if tile == '1':
                     Wall(self, col, row)
                 if tile == 'P':

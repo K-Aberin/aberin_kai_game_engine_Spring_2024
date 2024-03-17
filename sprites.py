@@ -65,7 +65,8 @@ class Player(Sprite):
 
     def collide_with_walls(self, dir):
         if dir == 'x':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False) or pg.sprite.spritecollide(self, self.game.passwalls, False)
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            hitspass = pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vx > 0:
                     self.x = hits[0].rect.left - self.rect.width
@@ -73,8 +74,18 @@ class Player(Sprite):
                     self.x = hits[0].rect.right
                 self.vx = 0
                 self.rect.x = self.x
+            if hitspass and self.status == "none":
+                    if self.vx > 0:
+                        self.x = hitspass[0].rect.left - self.rect.width
+                    if self.vx < 0:
+                        self.x = hitspass[0].rect.right
+                    self.vx = 0
+                    self.rect.x = self.x
+            if hitspass and self.status == "break":
+                hitspass.remove()
         if dir == 'y':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False) or pg.sprite.spritecollide(self, self.game.passwalls, False)
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            hitspass = pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.height
@@ -82,7 +93,15 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
-            
+            if hitspass and self.status == "none":
+                if self.vy > 0:
+                    self.y = hitspass[0].rect.top - self.rect.height
+                if self.vy < 0:
+                    self.y = hitspass[0].rect.bottom
+                self.vy = 0
+                self.rect.y = self.y
+            if hitspass and self.status == "break":
+                hitspass.remove()
         
     def collide_with_group(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
@@ -95,16 +114,16 @@ class Player(Sprite):
                 if str(hits[0].__class__.__name__) == "Slowdowns":
                     self.speed *= 0.6
                 if str(hits[0].__class__.__name__) == "Dies":
-                    self.speed *= 0.9
-                    self.moneybag = 0
+                    self.speed *= 0.7
+                    self.moneybag -= 2
                     self.hitpoints -= 1
-
                 if str(hits[0].__class__.__name__) == "Powerup":
                     self.status = "breakwall"
                     self.speed = 300
+                    self.hitpoints = 3
                 if str(hits[0].__class__.__name__) == "Passwall":
-                    if self.status == "breakwall":
-                        Passwall.kill()
+                    pass
+                        
     
 
     def update(self):
@@ -124,6 +143,8 @@ class Player(Sprite):
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
+
+
         if self.hitpoints > 3:
             self.hitpoints = 3
         if self.hitpoints == 3:
@@ -134,6 +155,15 @@ class Player(Sprite):
             self.image.fill(DARKRED)
         if self.hitpoints == 0:
             self.kill()
+
+        if self.moneybag < 0:
+            self.moneybag = 0
+
+        if self.speed < 100:
+            self.speed = 100
+        
+        if self.status == "breakwall":
+            print("break")
 
 
 class Wall(Sprite):
