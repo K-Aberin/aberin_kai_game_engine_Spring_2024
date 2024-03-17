@@ -115,8 +115,9 @@ class Player(Sprite):
                     self.speed *= 0.6
                 if str(hits[0].__class__.__name__) == "Dies":
                     self.speed *= 0.7
-                    self.moneybag -= 2
+                    self.moneybag -= 1
                     self.hitpoints -= 1
+                    self.status = "none"
                 if str(hits[0].__class__.__name__) == "Powerup":
                     self.status = "breakwall"
                     self.speed = 300
@@ -159,11 +160,12 @@ class Player(Sprite):
         if self.moneybag < 0:
             self.moneybag = 0
 
-        if self.speed < 100:
-            self.speed = 100
+        if self.speed < 30:
+            self.speed = 30
         
         if self.status == "breakwall":
             print("break")
+        
 
 
 class Wall(Sprite):
@@ -214,7 +216,7 @@ class Powerup(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(WHITE)
+        self.image.fill(BLUE)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y

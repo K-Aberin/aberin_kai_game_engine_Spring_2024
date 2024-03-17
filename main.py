@@ -64,7 +64,7 @@ class Game:
         img_folder = path.join(game_folder, 'images')
         self.player_img = pg.image.load(path.join(img_folder, 'freddy32.png')).convert_alpha()
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
             for line in f:
                 print(line)
                 self.map_data.append(line)
