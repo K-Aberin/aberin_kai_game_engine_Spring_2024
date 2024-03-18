@@ -74,6 +74,7 @@ class Player(Sprite):
                     self.x = hits[0].rect.right
                 self.vx = 0
                 self.rect.x = self.x
+                # if player's status is none, they will collide with passwalls
             if hitspass and self.status == "none":
                     if self.vx > 0:
                         self.x = hitspass[0].rect.left - self.rect.width
@@ -81,6 +82,7 @@ class Player(Sprite):
                         self.x = hitspass[0].rect.right
                     self.vx = 0
                     self.rect.x = self.x
+                # if the player's status is break, they will break passwalls they collide with
             if hitspass and self.status == "break":
                 hitspass.remove()
         if dir == 'y':
@@ -109,16 +111,20 @@ class Player(Sprite):
             if hits:
                 if str(hits[0].__class__.__name__) == "Coin":
                     self.moneybag += 1
+                    # coins will reset speed and add +1 hp
                     self.speed = 300
                     self.hitpoints += 1
                 if str(hits[0].__class__.__name__) == "Slowdowns":
+                    # slow blocks will slow down player speed by 0.6
                     self.speed *= 0.6
                 if str(hits[0].__class__.__name__) == "Dies":
+                    # damage blocks will slow down player, subtract one coin, subtract 1 hp, and reset player status
                     self.speed *= 0.7
                     self.moneybag -= 1
                     self.hitpoints -= 1
                     self.status = "none"
                 if str(hits[0].__class__.__name__) == "Powerup":
+                    # power ups will set the player's status to break, reset speed, and reset hp
                     self.status = "breakwall"
                     self.speed = 300
                     self.hitpoints = 3
@@ -145,7 +151,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
 
-
+        #player with start with 3 hp, and if they reach 0 hp, it will remove the player
         if self.hitpoints > 3:
             self.hitpoints = 3
         if self.hitpoints == 3:
@@ -157,14 +163,17 @@ class Player(Sprite):
         if self.hitpoints == 0:
             self.kill()
 
+        # player cannot have negative amount of coins
         if self.moneybag < 0:
             self.moneybag = 0
 
+        #player speed canot go below 30
         if self.speed < 30:
             self.speed = 30
         
         if self.status == "breakwall":
             print("break")
+            self.image.fill(TEAL)
         
 
 
@@ -194,8 +203,6 @@ class Coin(pg.sprite.Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
-# Project
-
 class Passwall(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.passwalls
@@ -208,8 +215,9 @@ class Passwall(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-        
 
+# Project
+        
 class Powerup(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.powerups
