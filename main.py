@@ -1,5 +1,6 @@
 # This file was created by: Kai Aberin
 
+# Coin system and clock (non-functional) by Chris Cozort
 
 # kill blocks, breakable walls, objects that slow player down
 
@@ -141,7 +142,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, str(self.player.moneybag), 64, WHITE, 1, 1)
+        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
         pg.display.flip()

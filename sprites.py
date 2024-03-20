@@ -152,6 +152,8 @@ class Player(Sprite):
         self.collide_with_group(self.game.dies, True)
 
         #player with start with 3 hp, and if they reach 0 hp, it will remove the player
+
+        #player cannot have more than 3 hp
         if self.hitpoints > 3:
             self.hitpoints = 3
         if self.hitpoints == 3:
@@ -172,10 +174,7 @@ class Player(Sprite):
             self.speed = 30
         
         if self.status == "breakwall":
-            print("break")
             self.image.fill(TEAL)
-        
-
 
 class Wall(Sprite):
     def __init__(self, game, x, y):
