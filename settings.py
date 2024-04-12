@@ -1,5 +1,5 @@
 #This file was created by: Kai Aberin
-TITLE = "i am very green but im mean"
+TITLE = "GAME"
 
 FPS = 30
 PLAYER_SPEED = 300
@@ -9,6 +9,7 @@ WIDTH = 1024
 #this is 24 grids high
 HEIGHT = 768
 TILESIZE = 32
+SMALLTILESIZE = 20
 
 BLACK = (0,0,0)
 WHITE = (255,255,255)

@@ -5,6 +5,7 @@
 import pygame as pg
 from pygame.sprite import Sprite
 from settings import *
+from os import path
 
 # create a player class
 
@@ -28,15 +29,46 @@ def collide_with_walls(sprite, group, dir):
             sprite.vel.y = 0
             sprite.rect.centery = sprite.pos.y
 
+
+SPRITESHEET = "theBell.png"
+
+game_folder = path.dirname(__file__)
+img_folder = path.join(game_folder, 'images')
+
+class Spritesheet:
+    # utility class for loading and parsing spritesheets
+    def __init__(self, filename):
+        self.spritesheet = pg.image.load(filename).convert()
+
+    def get_image(self, x, y, width, height):
+        # grab an image out of a larger spritesheet
+        image = pg.Surface((width, height))
+        image.blit(self.spritesheet, (0, 0), (x, y, width, height))
+        # image = pg.transform.scale(image, (width, height))
+        image = pg.transform.scale(image, (width * 1, height * 1))
+        return image
+
 class Player(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+        self.spritesheet = Spritesheet(path.join(img_folder, SPRITESHEET))
+        self.load_images()
+        # self.image.fill(GREEN)
+        self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
         self.vx, self.vy = 0,0
+
+        self.current_frame = 0
+
+        self.last_update = 0
+
+        self.jumping = False
+
+        self.walking = False
+
         self.x = x * TILESIZE
         self.y = y * TILESIZE
         self.moneybag = 0
@@ -62,6 +94,25 @@ class Player(Sprite):
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
+    
+    def load_images(self):
+        self.standing_frames = [self.spritesheet.get_image(0,0, 32, 32), 
+                                self.spritesheet.get_image(32,0, 32, 32)]
+        # for frame in self.standing_frames:
+        #     frame.set_colorkey(BLACK)
+
+        # add other frame sets for different poses etc.
+
+    # needed for animated sprite        
+    def animate(self):
+        now = pg.time.get_ticks()
+        if now - self.last_update > 350:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+            bottom = self.rect.bottom
+            self.image = self.standing_frames[self.current_frame]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom
 
     def collide_with_walls(self, dir):
         if dir == 'x':
@@ -151,19 +202,23 @@ class Player(Sprite):
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
 
+        self.animate()
+        self.get_keys()
+
         #player with start with 3 hp, and if they reach 0 hp, it will remove the player
 
         #player cannot have more than 3 hp
         if self.hitpoints > 3:
             self.hitpoints = 3
-        if self.hitpoints == 3:
-            self.image.fill(GREEN)
-        if self.hitpoints == 2:
-            self.image.fill(YELLOWORANGE)
-        if self.hitpoints == 1:
-            self.image.fill(DARKRED)
+        #if self.hitpoints == 3:
+        #    self.image.fill(GREEN)
+        #if self.hitpoints == 2:
+        #    self.image.fill(YELLOWORANGE)
+        #if self.hitpoints == 1:
+        #    self.image.fill(DARKRED)
         if self.hitpoints == 0:
             self.kill()
+            self.status = "dead"
 
         # player cannot have negative amount of coins
         if self.moneybag < 0:
@@ -173,8 +228,8 @@ class Player(Sprite):
         if self.speed < 30:
             self.speed = 30
         
-        if self.status == "breakwall":
-            self.image.fill(TEAL)
+        #if self.status == "breakwall":
+        #    self.image.fill(TEAL)
 
 class Wall(Sprite):
     def __init__(self, game, x, y):

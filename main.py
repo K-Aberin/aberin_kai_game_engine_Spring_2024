@@ -83,7 +83,7 @@ class Game:
          self.slowdowns = pg.sprite.Group()
          self.dies = pg.sprite.Group()
          self.powerups = pg.sprite.Group()
-         self.player = Player(self, 1, 1)
+         self.player = Player(self,9999,9999)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
          for row, tiles  in enumerate(self.map_data):
@@ -142,10 +142,23 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
+        self.draw_text(self.screen, str(self.player.moneybag), 64, GOLD, 1, 1)
+         #hp number
+        self.draw_text(self.screen, str(self.player.hitpoints), 64, GREEN, 2.5, 1)
+        if self.player.hitpoints == 2:
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, YELLOWORANGE, 2.5, 1)
+        if self.player.hitpoints == 1:
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, RED, 2.5, 1)
+        if self.player.hitpoints == 0:
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, DARKRED, 2.5, 1)
+         #status
+        self.draw_text(self.screen, "status:", 40, BLACK, 4, 0.75)
+        self.draw_text(self.screen, str(self.player.status), 64, BLACK, 4, 1.25)
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
         pg.display.flip()
+
+
 
 
 
