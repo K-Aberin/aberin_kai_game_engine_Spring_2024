@@ -35,6 +35,8 @@ SPRITESHEET = "theBell.png"
 game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
+button01 = False
+
 class Spritesheet:
     # utility class for loading and parsing spritesheets
     def __init__(self, filename):
@@ -73,6 +75,7 @@ class Player(Sprite):
         self.y = y * TILESIZE
         self.moneybag = 0
         self.status = "none"
+
         self.hitpoints = 3
         self.speed = 300
 
@@ -133,9 +136,9 @@ class Player(Sprite):
                         self.x = hitspass[0].rect.right
                     self.vx = 0
                     self.rect.x = self.x
-                # if the player's status is break, they will break passwalls they collide with
             if hitspass and self.status == "break":
                 hitspass.remove()
+                # if the player's status is break, they will break passwalls they collide with
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             hitspass = pg.sprite.spritecollide(self, self.game.passwalls, False)
@@ -179,8 +182,6 @@ class Player(Sprite):
                     self.status = "breakwall"
                     self.speed = 300
                     self.hitpoints = 3
-                if str(hits[0].__class__.__name__) == "Passwall":
-                    pass
                         
     
 
@@ -201,6 +202,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
+        self.collide_with_group(self.game.button01, True)
 
         self.animate()
         self.get_keys()
@@ -237,7 +239,7 @@ class Wall(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(YELLOW)
+        self.image = self.game.wall_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -250,12 +252,14 @@ class Coin(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GOLD)
+        self.image = self.game.coin_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+# Alpha
 
 class Passwall(Sprite):
     def __init__(self, game, x, y):
@@ -263,15 +267,13 @@ class Passwall(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(SLIGHTLYLESSYELLOW)
+        self.image = self.game.wallcracked_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-
-# Project
-        
+    
 class Powerup(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.powerups
@@ -311,3 +313,32 @@ class Slowdowns(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+# Beta
+
+class Button01(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.button01
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = self.game.buttonmagenta_img
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        
+
+class Buttonwall01(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.buttonwall01
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(MAGENTA)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        

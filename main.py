@@ -2,7 +2,9 @@
 
 # Coin system and clock (non-functional) by Chris Cozort
 
-# kill blocks, breakable walls, objects that slow player down
+# alpha: kill blocks, breakable walls, objects that slow player down
+
+# beta: add multiple levels, add image sprites to all objects, add more obstacles/puzzles
 
 # import necessary modules
 # my first source control edit
@@ -43,9 +45,6 @@ class Cooldown():
 
 
 
-def draw_text():
-    pass
-
 # creating game class
 class Game:
     #initilizng the class
@@ -59,13 +58,20 @@ class Game:
         # setting game clock 
         self.clock = pg.time.Clock()
         self.load_data()
+
+        # images
+        self.game_folder = path.dirname(__file__)
+        self.img_folder = path.join(self.game_folder, 'images')
+
+        self.buttonmagenta_img = pg.image.load(path.join(self.img_folder, 'button_magenta.png')).convert_alpha()
+        self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.png')).convert_alpha()
+        self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.png')).convert_alpha()
+        self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
+
 # Load save data
     def load_data(self):
-        game_folder = path.dirname(__file__)
-        img_folder = path.join(game_folder, 'images')
-        self.player_img = pg.image.load(path.join(img_folder, 'freddy32.png')).convert_alpha()
         self.map_data = []
-        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
             for line in f:
                 print(line)
                 self.map_data.append(line)
@@ -83,7 +89,9 @@ class Game:
          self.slowdowns = pg.sprite.Group()
          self.dies = pg.sprite.Group()
          self.powerups = pg.sprite.Group()
-         self.player = Player(self,9999,9999)
+         self.button01 = pg.sprite.Group()
+         self.buttonwall01 = pg.sprite.Group()
+         # self.player = Player(self, col, row)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
          for row, tiles  in enumerate(self.map_data):
@@ -105,6 +113,10 @@ class Game:
                     Slowdowns(self, col, row)
                 if tile == 'U':
                     Powerup(self, col, row)
+                if tile == 'M':
+                    Button01(self, col, row)
+                if tile == '!':
+                    Buttonwall01(self, col, row)
                 
 
                      
@@ -142,18 +154,24 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
+        # money
         self.draw_text(self.screen, str(self.player.moneybag), 64, GOLD, 1, 1)
          #hp number
-        self.draw_text(self.screen, str(self.player.hitpoints), 64, GREEN, 2.5, 1)
+        self.draw_text(self.screen, str(self.player.hitpoints), 64, GREEN, 3.5, 1)
         if self.player.hitpoints == 2:
-            self.draw_text(self.screen, str(self.player.hitpoints), 64, YELLOWORANGE, 2.5, 1)
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, YELLOWORANGE, 3.5, 1)
         if self.player.hitpoints == 1:
-            self.draw_text(self.screen, str(self.player.hitpoints), 64, RED, 2.5, 1)
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, RED, 3.5, 1)
         if self.player.hitpoints == 0:
-            self.draw_text(self.screen, str(self.player.hitpoints), 64, DARKRED, 2.5, 1)
+            self.draw_text(self.screen, str(self.player.hitpoints), 64, DARKRED, 3.5, 1)
          #status
-        self.draw_text(self.screen, "status:", 40, BLACK, 4, 0.75)
-        self.draw_text(self.screen, str(self.player.status), 64, BLACK, 4, 1.25)
+        self.draw_text(self.screen, str(self.player.status), 64, BLACK, 6, 1.25)
+         #top text
+        self.draw_text(self.screen, "coins:", 20, BLACK, 1, 0.75)
+        self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
+        self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
+
+
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
         pg.display.flip()
