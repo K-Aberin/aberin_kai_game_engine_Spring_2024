@@ -15,7 +15,8 @@ from sprites import *
 from random import randint
 from os import path
 
-
+Coinamt = [13, 24]
+LevelComplete = False
 
 # added this math function to round down the clock
 from math import floor
@@ -64,6 +65,7 @@ class Game:
         self.img_folder = path.join(self.game_folder, 'images')
 
         self.buttonmagenta_img = pg.image.load(path.join(self.img_folder, 'button_magenta.png')).convert_alpha()
+        self.buttonorange_img = pg.image.load(path.join(self.img_folder, 'button_orange.jpg')).convert_alpha()
         self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.jpg')).convert_alpha()
         self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.jpg')).convert_alpha()
         self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
@@ -91,6 +93,8 @@ class Game:
          self.powerups = pg.sprite.Group()
          self.buttonwall01 = pg.sprite.Group()
          self.button01 = pg.sprite.Group()
+         self.buttonwall02 = pg.sprite.Group()
+         self.button02 = pg.sprite.Group()
          self.buttonwalls = pg.sprite.Group()
          # self.player = Player(self, col, row)
          #for x in range(10, 20):
@@ -118,7 +122,10 @@ class Game:
                     Button01(self, col, row)
                 if tile == '!':
                     Buttonwall01(self, col, row)
-                
+                if tile == 'O':
+                    Button02(self, col, row)
+                if tile == '@':
+                    Buttonwall02(self, col, row)
 
                      
 # Run method in game engine
@@ -202,6 +209,8 @@ class Game:
 
     def show_go_screen(self):
         pass
+
+
 # Instanciated the game
                 
 g = Game()
