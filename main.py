@@ -4,7 +4,7 @@
 
 # alpha: kill blocks, breakable walls, objects that slow player down
 
-# beta: add multiple levels, add image sprites to all objects, add more obstacles/puzzles
+# beta: add level progression, add buttons + button walls, add shift & stamina
 
 # import necessary modules
 # my first source control edit
@@ -64,8 +64,8 @@ class Game:
         self.img_folder = path.join(self.game_folder, 'images')
 
         self.buttonmagenta_img = pg.image.load(path.join(self.img_folder, 'button_magenta.png')).convert_alpha()
-        self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.png')).convert_alpha()
-        self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.png')).convert_alpha()
+        self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.jpg')).convert_alpha()
+        self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.jpg')).convert_alpha()
         self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
 
 # Load save data
@@ -89,8 +89,9 @@ class Game:
          self.slowdowns = pg.sprite.Group()
          self.dies = pg.sprite.Group()
          self.powerups = pg.sprite.Group()
-         self.button01 = pg.sprite.Group()
          self.buttonwall01 = pg.sprite.Group()
+         self.button01 = pg.sprite.Group()
+         self.buttonwalls = pg.sprite.Group()
          # self.player = Player(self, col, row)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
