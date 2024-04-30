@@ -66,6 +66,7 @@ class Game:
 
         self.buttonmagenta_img = pg.image.load(path.join(self.img_folder, 'button_magenta.png')).convert_alpha()
         self.buttonorange_img = pg.image.load(path.join(self.img_folder, 'button_orange.jpg')).convert_alpha()
+        self.buttongreen_img = pg.image.load(path.join(self.img_folder, 'button_green.jpg')).convert_alpha()
         self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.jpg')).convert_alpha()
         self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.jpg')).convert_alpha()
         self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
@@ -73,7 +74,7 @@ class Game:
 # Load save data
     def load_data(self):
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
             for line in f:
                 print(line)
                 self.map_data.append(line)
@@ -95,7 +96,10 @@ class Game:
          self.button01 = pg.sprite.Group()
          self.buttonwall02 = pg.sprite.Group()
          self.button02 = pg.sprite.Group()
+         self.buttonwall03 = pg.sprite.Group()
+         self.button03 = pg.sprite.Group()
          self.buttonwalls = pg.sprite.Group()
+         self.enddoor = pg.sprite.Group()
          # self.player = Player(self, col, row)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
@@ -126,6 +130,12 @@ class Game:
                     Button02(self, col, row)
                 if tile == '@':
                     Buttonwall02(self, col, row)
+                if tile == 'G':
+                    Button03(self, col, row)
+                if tile == '#':
+                    Buttonwall03(self, col, row)
+                if tile == 'e':
+                    Enddoor(self, col, row)
 
                      
 # Run method in game engine
@@ -163,7 +173,7 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         # money
-        self.draw_text(self.screen, str(self.player.moneybag), 64, GOLD, 1, 1)
+        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
          #hp number
         self.draw_text(self.screen, str(self.player.hitpoints), 64, GREEN, 3.5, 1)
         if self.player.hitpoints == 2:
@@ -179,6 +189,7 @@ class Game:
         self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
         self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
 
+        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
 
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)

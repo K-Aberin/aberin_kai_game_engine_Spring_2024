@@ -36,6 +36,7 @@ game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
 BUTTONS = [False, False, False]
+COINSREQUIRED = [2, ]
 
 class Spritesheet:
     # utility class for loading and parsing spritesheets
@@ -121,9 +122,10 @@ class Player(Sprite):
         
         hitsbutton01 = pg.sprite.spritecollide(self, self.game.buttonwall01, BUTTONS[0])
         hitsbutton02 = pg.sprite.spritecollide(self, self.game.buttonwall02, BUTTONS[1])
+        hitsbutton03 = pg.sprite.spritecollide(self, self.game.buttonwall03, BUTTONS[2])
 
         if dir == 'x':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False) or hitsbutton01 or hitsbutton02
+            hits = pg.sprite.spritecollide(self, self.game.walls, False) or hitsbutton01 or hitsbutton02 or hitsbutton03
             hitspass = pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vx > 0:
@@ -145,7 +147,7 @@ class Player(Sprite):
                 # if the player's status is break, they will break passwalls they collide with
 
         if dir == 'y':
-            hits = pg.sprite.spritecollide(self, self.game.walls, False) or hitsbutton01 or hitsbutton02
+            hits = pg.sprite.spritecollide(self, self.game.walls, False) or hitsbutton01 or hitsbutton02 or hitsbutton03
             hitspass = pg.sprite.spritecollide(self, self.game.passwalls, False)
             if hits:
                 if self.vy > 0:
@@ -192,6 +194,9 @@ class Player(Sprite):
                 if str(hits[0].__class__.__name__) == "Button02":
                         BUTTONS[1] = True
                         print(BUTTONS)
+                if str(hits[0].__class__.__name__) == "Button03":
+                        BUTTONS[2] = True
+                        print(BUTTONS)
 
     
 
@@ -216,6 +221,8 @@ class Player(Sprite):
         self.collide_with_group(self.game.button01, True)
         self.collide_with_group(self.game.buttonwall02, BUTTONS[1])
         self.collide_with_group(self.game.button02, True)
+        self.collide_with_group(self.game.buttonwall03, BUTTONS[2])
+        self.collide_with_group(self.game.button03, True)
 
         self.animate()
         self.get_keys()
@@ -386,3 +393,48 @@ class Buttonwall02(Sprite):
         if BUTTONS[1] == True:
             game.Player.collide_with_group(self.game.buttonwall02, False)
             print("test")
+
+class Button03(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.button03
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = self.game.buttongreen_img
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+class Buttonwall03(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.buttonwall03
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+        if BUTTONS[1] == True:
+            game.Player.collide_with_group(self.game.buttonwall03, False)
+            print("test")
+
+
+class Enddoor(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.enddoor, game.walls
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE * 2, TILESIZE * 2))
+        self.image.fill(SLIGHTLYLESSYELLOW)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        
+
