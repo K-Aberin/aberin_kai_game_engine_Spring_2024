@@ -74,7 +74,7 @@ class Game:
 # Load save data
     def load_data(self):
         self.map_data = []
-        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
             for line in f:
                 print(line)
                 self.map_data.append(line)
@@ -184,12 +184,15 @@ class Game:
             self.draw_text(self.screen, str(self.player.hitpoints), 64, DARKRED, 3.5, 1)
          #status
         self.draw_text(self.screen, str(self.player.status), 64, BLACK, 6, 1.25)
+        # stamina
+        self.draw_text(self.screen, str(self.player.stamina), 64, BLACK, 11, 1.25)
          #top text
         self.draw_text(self.screen, "coins:", 20, BLACK, 1, 0.75)
         self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
         self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
+        self.draw_text(self.screen, "stamina:", 20, BLACK, 11, 0.75)
 
-        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
+        # self.draw_text(self.screen, str(self.enddoor.coinrequired[2]), 32, BLACK, 11, 21.5)
 
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)

@@ -1,5 +1,6 @@
 #This file was created by: Kai Aberin
 
+#Parts of sprinting mecahnic were made with help from ChatGPT
 
 # import modules
 import pygame as pg
@@ -36,7 +37,6 @@ game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
 BUTTONS = [False, False, False]
-COINSREQUIRED = [2, ]
 
 class Spritesheet:
     # utility class for loading and parsing spritesheets
@@ -80,6 +80,17 @@ class Player(Sprite):
         self.hitpoints = 3
         self.speed = 300
 
+        self.last_position = (self.rect.x, self.rect.y)
+
+        self.sprinting = False
+        self.can_sprint = True
+        self.stamina = 100
+        self.stamina_regen_rate = 1  # Amount of stamina regenerated per frame
+        self.sprint_speed_multiplier = 2.5  # Multiplier applied to speed while sprinting
+        self.stamina_depletion_rate = 2  # Amount of stamina depleted per frame while sprinting
+
+            
+
     #def move(self, dx=0, dy=0):
      #   self.x += dx
       #  self.y += dy
@@ -89,15 +100,28 @@ class Player(Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:
             self.vx = -self.speed
+            self.walking == True
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.vx = self.speed
+            self.walking == True
         if keys[pg.K_UP] or keys[pg.K_w]:
             self.vy = -self.speed
+            self.walking == True
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = self.speed
+            self.walking == True
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
+
+        if keys[pg.K_LSHIFT] and self.stamina > 0 and self.can_sprint == True: # Sprinting key (Left Shift)
+            self.sprinting = True
+        else:
+            self.sprinting = False
+
+        if self.sprinting:
+            self.vx *= self.sprint_speed_multiplier
+            self.vy *= self.sprint_speed_multiplier
     
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0,0, 32, 32), 
@@ -226,6 +250,29 @@ class Player(Sprite):
 
         self.animate()
         self.get_keys()
+
+        self.last_position = (self.rect.x, self.rect.y)
+
+        if self.rect.x == self.last_position[0] and self.rect.y == self.last_position[1]:
+            self.walking == False
+
+        if not self.sprinting and self.stamina < 100:
+                self.stamina += self.stamina_regen_rate
+                # Ensure stamina doesn't exceed maximum
+                if self.stamina > 100:
+                    self.stamina = 100
+                if self.stamina == 100:
+                    self.can_sprint = True
+
+        # Deplete stamina while sprinting
+        if self.sprinting:
+            self.stamina -= self.stamina_depletion_rate
+            # If stamina runs out, stop sprinting
+            if self.stamina <= 0:
+                self.stamina = 0
+                self.sprinting = False
+                self.can_sprint = False
+
 
         #player with start with 3 hp, and if they reach 0 hp, it will remove the player
 
@@ -436,5 +483,6 @@ class Enddoor(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-        
+
+        self.coinrequired = 16
 
