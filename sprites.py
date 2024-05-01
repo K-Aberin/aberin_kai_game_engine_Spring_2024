@@ -37,6 +37,7 @@ game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
 BUTTONS = [False, False, False]
+CAN_WIN = False
 
 class Spritesheet:
     # utility class for loading and parsing spritesheets
@@ -82,11 +83,13 @@ class Player(Sprite):
 
         self.last_position = (self.rect.x, self.rect.y)
 
+        self.coins_required = 20
+
         self.sprinting = False
         self.can_sprint = True
         self.stamina = 100
         self.stamina_regen_rate = 1  # Amount of stamina regenerated per frame
-        self.sprint_speed_multiplier = 2.5  # Multiplier applied to speed while sprinting
+        self.sprint_speed_multiplier = 1.75  # Multiplier applied to speed while sprinting
         self.stamina_depletion_rate = 2  # Amount of stamina depleted per frame while sprinting
 
             
@@ -221,6 +224,13 @@ class Player(Sprite):
                 if str(hits[0].__class__.__name__) == "Button03":
                         BUTTONS[2] = True
                         print(BUTTONS)
+                if str(hits[0].__class__.__name__) == "Enddoor":
+                    if self.moneybag > 0 and self.coins_required > 0:
+                        self.moneybag -=1
+                        self.coins_required -=1
+                    if self.moneybag == 0 and self.coins_required == 0:
+                        self.moneybag = self.moneybag
+                        self.coins_required = self.coins_required
 
     
 
@@ -247,6 +257,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.button02, True)
         self.collide_with_group(self.game.buttonwall03, BUTTONS[2])
         self.collide_with_group(self.game.button03, True)
+        self.collide_with_group(self.game.enddoor, CAN_WIN)
 
         self.animate()
         self.get_keys()
@@ -272,6 +283,9 @@ class Player(Sprite):
                 self.stamina = 0
                 self.sprinting = False
                 self.can_sprint = False
+
+        if self.moneybag >= self.coins_required:
+            CAN_WIN == True
 
 
         #player with start with 3 hp, and if they reach 0 hp, it will remove the player
@@ -473,7 +487,7 @@ class Buttonwall03(Sprite):
 
 class Enddoor(Sprite):
     def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.enddoor, game.walls
+        self.groups = game.all_sprites, game.enddoor
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE * 2, TILESIZE * 2))
@@ -483,6 +497,4 @@ class Enddoor(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-
-        self.coinrequired = 16
 

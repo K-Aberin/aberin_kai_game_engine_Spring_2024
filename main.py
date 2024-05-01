@@ -15,9 +15,6 @@ from sprites import *
 from random import randint
 from os import path
 
-Coinamt = [13, 24]
-LevelComplete = False
-
 # added this math function to round down the clock
 from math import floor
 
@@ -43,8 +40,6 @@ class Cooldown():
     # sets current time
     def timer(self):
         self.current_time = floor((pg.time.get_ticks())/1000)
-
-
 
 # creating game class
 class Game:
@@ -74,11 +69,10 @@ class Game:
 # Load save data
     def load_data(self):
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
+        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
             for line in f:
                 print(line)
                 self.map_data.append(line)
-
     
     def new(self):
         # create timer
@@ -137,7 +131,6 @@ class Game:
                 if tile == 'e':
                     Enddoor(self, col, row)
 
-                     
 # Run method in game engine
     def run(self):
         self.playing = True
@@ -165,7 +158,7 @@ class Game:
         font = pg.font.Font(font_name, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.topleft = (x*TILESIZE,y*TILESIZE)
+        text_rect.topleft = (x * TILESIZE, y * TILESIZE)
         surface.blit(text_surface, text_rect)
 
     def draw(self):
@@ -183,26 +176,38 @@ class Game:
         if self.player.hitpoints == 0:
             self.draw_text(self.screen, str(self.player.hitpoints), 64, DARKRED, 3.5, 1)
          #status
-        self.draw_text(self.screen, str(self.player.status), 64, BLACK, 6, 1.25)
+        self.draw_text(self.screen, str(self.player.status), 40, BLACK, 6, 1.5)
         # stamina
         self.draw_text(self.screen, str(self.player.stamina), 64, BLACK, 11, 1.25)
+        if self.player.sprinting == True:
+            self.draw_text(self.screen, str(self.player.stamina), 64, DARKRED, 11, 1.25)
+        if self.player.sprinting == False:
+            self.draw_text(self.screen, str(self.player.stamina), 64, BLACK, 11, 1.25)
          #top text
         self.draw_text(self.screen, "coins:", 20, BLACK, 1, 0.75)
         self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
         self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
         self.draw_text(self.screen, "stamina:", 20, BLACK, 11, 0.75)
+        #door text
+        self.draw_text(self.screen, "coins needed", 13, BLACK, 10, 21)
+        self.draw_text(self.screen, str(self.player.coins_required), 20, BLACK, 10.5, 22)
 
+        #win text
+        if self.player.coins_required == 0:
+            self.screen.fill(BLACK)
+            self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
+            print("win :)")
+        #lose text
+        if self.player.hitpoints == 0:
+            self.screen.fill(BLACK)
+            self.draw_text(self.screen, "You died...", 60, RED, 13, 13)
+            print("lose :(")
         # self.draw_text(self.screen, str(self.enddoor.coinrequired[2]), 32, BLACK, 11, 21.5)
 
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
         pg.display.flip()
 
-
-
-
-
-    
 #initilizing key input system
     def events(self):
         for event in pg.event.get():
