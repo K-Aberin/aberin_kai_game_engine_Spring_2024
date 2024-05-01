@@ -36,7 +36,9 @@ SPRITESHEET = "theBell.png"
 game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
+#corresponds to each color button
 BUTTONS = [False, False, False]
+
 CAN_WIN = False
 
 class Spritesheet:
@@ -83,10 +85,11 @@ class Player(Sprite):
 
         self.last_position = (self.rect.x, self.rect.y)
 
+        # coins required to beat level
         self.coins_required = 20
 
         self.sprinting = False
-        self.can_sprint = True
+        self.can_sprint = True # Checks if player is able to sprint
         self.stamina = 100
         self.stamina_regen_rate = 1  # Amount of stamina regenerated per frame
         self.sprint_speed_multiplier = 1.75  # Multiplier applied to speed while sprinting
@@ -117,7 +120,7 @@ class Player(Sprite):
             self.vx *= 0.7071
             self.vy *= 0.7071
 
-        if keys[pg.K_LSHIFT] and self.stamina > 0 and self.can_sprint == True: # Sprinting key (Left Shift)
+        if keys[pg.K_LSHIFT] and self.stamina > 0 and self.can_sprint == True: # if holding left shift, player will sprint
             self.sprinting = True
         else:
             self.sprinting = False
@@ -228,7 +231,7 @@ class Player(Sprite):
                     if self.moneybag > 0 and self.coins_required > 0:
                         self.moneybag -=1
                         self.coins_required -=1
-                    if self.moneybag == 0 and self.coins_required == 0:
+                    if self.moneybag == 0 and self.coins_required == 0: # makes sure coins required does not become negative
                         self.moneybag = self.moneybag
                         self.coins_required = self.coins_required
 
@@ -257,7 +260,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.button02, True)
         self.collide_with_group(self.game.buttonwall03, BUTTONS[2])
         self.collide_with_group(self.game.button03, True)
-        self.collide_with_group(self.game.enddoor, CAN_WIN)
+        self.collide_with_group(self.game.enddoor, CAN_WIN) # if player can win, they can collide and activate end
 
         self.animate()
         self.get_keys()
@@ -269,7 +272,7 @@ class Player(Sprite):
 
         if not self.sprinting and self.stamina < 100:
                 self.stamina += self.stamina_regen_rate
-                # Ensure stamina doesn't exceed maximum
+                # Stamina cannot exceed 100
                 if self.stamina > 100:
                     self.stamina = 100
                 if self.stamina == 100:
@@ -278,7 +281,7 @@ class Player(Sprite):
         # Deplete stamina while sprinting
         if self.sprinting:
             self.stamina -= self.stamina_depletion_rate
-            # If stamina runs out, stop sprinting
+            # If stamina runs out, player stops sprinting and cannot sprint again until stamina is full
             if self.stamina <= 0:
                 self.stamina = 0
                 self.sprinting = False
@@ -288,7 +291,7 @@ class Player(Sprite):
             CAN_WIN == True
 
 
-        #player with start with 3 hp, and if they reach 0 hp, it will remove the player
+        #player starts with 3 hp, and if they reach 0 hp, it will remove the player
 
         #player cannot have more than 3 hp
         if self.hitpoints > 3:

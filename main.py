@@ -4,7 +4,7 @@
 
 # alpha: kill blocks, breakable walls, objects that slow player down
 
-# beta: add level progression, add buttons + button walls, add shift & stamina
+# beta: added add buttons + button walls, shift & stamina, end door
 
 # import necessary modules
 # my first source control edit
@@ -193,16 +193,15 @@ class Game:
         self.draw_text(self.screen, str(self.player.coins_required), 20, BLACK, 10.5, 22)
 
         #win text
-        if self.player.coins_required == 0:
+        if self.player.coins_required == 0: # if player has no more coins required, show win screen
             self.screen.fill(BLACK)
             self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
             print("win :)")
         #lose text
-        if self.player.hitpoints == 0:
+        if self.player.hitpoints == 0: # if player dies, show death screen
             self.screen.fill(BLACK)
             self.draw_text(self.screen, "You died...", 60, RED, 13, 13)
             print("lose :(")
-        # self.draw_text(self.screen, str(self.enddoor.coinrequired[2]), 32, BLACK, 11, 21.5)
 
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
