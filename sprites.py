@@ -560,19 +560,17 @@ class Enemy(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-        self.speed = 150
-        self.hitpoints = 5
+        self.speed = 100
+        self.hitpoints = 7
 
-        if self.hitpoints == 4:
-            self.speed = 90
-        if self.hitpoints == 3:
-            self.speed = 100
-        if self.hitpoints == 2:
-            self.speed = 110
-        if self.hitpoints == 1:
-            self.speed = 120
-        if self.hitpoints == 0:
-            self.kill()
+    def collide_with_group(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+                if str(hits[0].__class__.__name__) == "Projectile":
+                    self.hitpoints -=1
+                    print("hit")
+                    print(str(self.hitpoints))
+                    print(str(self.speed))
     
     #Movement system copied from Chatgpt
     def update(self):
@@ -589,7 +587,25 @@ class Enemy(pg.sprite.Sprite):
         # Update the enemy's position
         self.rect.x += vel_x * self.game.dt
         self.rect.y += vel_y * self.game.dt
+    
+        self.collide_with_group(self.game.projectile, True)
 
+        if self.hitpoints == 7:
+            self.speed = 100
+        if self.hitpoints == 6:
+            self.speed = 110
+        if self.hitpoints == 5:
+            self.speed = 120
+        if self.hitpoints == 4:
+            self.speed = 130
+        if self.hitpoints == 3:
+            self.speed = 140
+        if self.hitpoints == 2:
+            self.speed = 150
+        if self.hitpoints == 1:
+            self.speed = 160
+        if self.hitpoints <= 0:
+            self.kill()
         
 
 class StaminaBoost(Sprite):
@@ -642,7 +658,7 @@ class Throwobject(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
-#class modified from chatgpt
+#Entire class modified from chatgpt
 class Projectile(pg.sprite.Sprite):
     def __init__(self, game, x, y):
         super().__init__()
@@ -652,5 +668,23 @@ class Projectile(pg.sprite.Sprite):
         self.image.fill(ORANGE)  # Set color of the projectile
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = 50  # Adjust speed as needed
-        self.vel = 50
+        self.speed = 5  # Adjust speed as needed
+        self.vel = 5
+
+    def update(self):
+        # Update the projectile's position based on its velocity
+        self.rect.x += self.vel.x  # Adjust for horizontal velocity
+        self.rect.y += self.vel.y  # Adjust for vertical velocity
+
+        # Check if the projectile is out of bounds and remove it if necessary
+        if self.rect.right < 0 or self.rect.left > WIDTH or \
+                self.rect.bottom < 0 or self.rect.top > HEIGHT:
+            self.kill()
+
+        self.collide_with_group(self.game.passwalls, True)
+
+    def collide_with_group(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+                if str(hits[0].__class__.__name__) == "Passwall":
+                    self.kill()

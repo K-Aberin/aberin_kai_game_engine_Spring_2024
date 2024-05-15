@@ -321,9 +321,12 @@ class Game:
                  #   self.player.move(dy=-1)
                 #if event.key == pg.K_DOWN:
                  #   self.player.move(dy=1)
+
+            #modified from chatgpt
             if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
+                if event.button == 1 and self.player.has_projectile == True:  # Left mouse button
                     self.player.throw_projectile(event.pos)  # Pass mouse position to player's throw_projectile method
+                    self.player.has_projectile = False
 
 # Instanciated the game
                 
