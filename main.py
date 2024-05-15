@@ -1,6 +1,7 @@
 # This file was created by: Kai Aberin
 
 # Coin system and clock (non-functional) by Chris Cozort
+# Map changing system created with modified code from ChatGPT and Chriz Cozort
 
 # alpha: kill blocks, breakable walls, objects that slow player down
 
@@ -17,6 +18,12 @@ from os import path
 
 # added this math function to round down the clock
 from math import floor
+
+LEVEL_0 = "map1.txt"
+LEVEL_1 = "map2.txt"
+#LEVEL_2 = "map3.txt"
+
+levels = [LEVEL_0, LEVEL_1]
 
 # this 'cooldown' class is designed to help us control time
 class Cooldown():
@@ -46,15 +53,15 @@ class Game:
     #initilizng the class
     def __init__ (self):
         pg.init()
+        self.current_level = 0
         self.screen = pg.display.set_mode((WIDTH,HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
-        self.load_data()
         # setting game clock 
         self.clock = pg.time.Clock()
         self.load_data()
-
+        
         # images
         self.game_folder = path.dirname(__file__)
         self.img_folder = path.join(self.game_folder, 'images')
@@ -65,14 +72,84 @@ class Game:
         self.wall_img = pg.image.load(path.join(self.img_folder, 'wall.jpg')).convert_alpha()
         self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.jpg')).convert_alpha()
         self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
+        self.john_img = pg.image.load(path.join(self.img_folder, 'john.png')).convert_alpha()
 
-# Load save data
+    # Load save data
     def load_data(self):
-        self.map_data = []
-        with open(path.join(game_folder, 'map1.txt'), 'rt') as f:
-            for line in f:
-                print(line)
-                self.map_data.append(line)
+        #self.map_data = []
+        #with open(path.join(game_folder, LEVEL_1), 'rt') as f:
+        #    for line in f:
+        #        print(line)
+        #        self.map_data.append(line)
+        self.map = Map(path.join(game_folder, LEVEL_0)) # starting level
+
+    def change_level(self, lvl):
+
+        level_file = levels[self.current_level]
+        self.map = Map(path.join(game_folder, level_file))
+
+        self.all_sprites.empty()
+        self.walls.empty()
+        self.passwalls.empty()
+        self.dies.empty()
+        self.slowdowns.empty()
+        self.coins.empty()
+        self.buttonwall01.empty()
+        self.buttonwall02.empty()
+        self.buttonwall03.empty()
+        self.powerups.empty()
+        self.throwobject.empty()
+
+        # reset criteria for changing level
+        self.player.moneybag = 0
+        self.player.speed = 300
+        self.player.hitpoints = 3
+        self.player.status = "none"
+        self.player.stamina = 100
+        self.player.coins_required = 20
+    
+        with open(path.join(game_folder, level_file), 'rt') as f:
+         for row, line in enumerate(f):
+            for col, tile in enumerate(line):
+                if tile == '.':
+                    pass
+                if tile == '1':
+                    Wall(self, col, row)
+                if tile == 'P':
+                    self.player = Player(self, col, row)
+                if tile == '2':
+                    Passwall (self, col, row)
+                if tile == 'C':
+                    Coin(self, col, row)
+                if tile == 'D':
+                    Dies(self, col, row)
+                if tile == 'S':
+                    Slowdowns(self, col, row)
+                if tile == 'U':
+                    Powerup(self, col, row)
+                if tile == 'M':
+                    Button01(self, col, row)
+                if tile == '!':
+                    Buttonwall01(self, col, row)
+                if tile == 'O':
+                    Button02(self, col, row)
+                if tile == '@':
+                    Buttonwall02(self, col, row)
+                if tile == 'G':
+                    Button03(self, col, row)
+                if tile == '#':
+                    Buttonwall03(self, col, row)
+                if tile == 'e':
+                    Enddoor(self, col, row)
+                if tile == '&':
+                    Enemy(self, col, row)
+                if tile == 's':
+                    StaminaBoost(self, col, row)
+                if tile == 'W':
+                    Winblock(self, col, row)
+                if tile == 'T':
+                    Throwobject(self, col, row)
+        print("currently on level",self.current_level)
     
     def new(self):
         # create timer
@@ -94,11 +171,17 @@ class Game:
          self.button03 = pg.sprite.Group()
          self.buttonwalls = pg.sprite.Group()
          self.enddoor = pg.sprite.Group()
+         self.enemy = pg.sprite.Group()
+         self.staminaboost = pg.sprite.Group()
+         self.winblock = pg.sprite.Group()
+         self.throwobject = pg.sprite.Group()
+         self.projectile = pg.sprite.Group()
          # self.player = Player(self, col, row)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
-         for row, tiles  in enumerate(self.map_data):
+         for row, tiles  in enumerate(self.map.data):
              #print(self.map_data)
+             #if code doesnt work, paste classes here
              for col, tile in enumerate(tiles):
                 if tile == '.':
                     pass
@@ -130,6 +213,15 @@ class Game:
                     Buttonwall03(self, col, row)
                 if tile == 'e':
                     Enddoor(self, col, row)
+                if tile == '&':
+                    Enemy(self, col, row,)
+                if tile == 's':
+                    StaminaBoost(self, col, row)
+                if tile == 'W':
+                    Winblock(self, col, row)
+                if tile == 'T':
+                    Throwobject(self, col, row)
+            
 
 # Run method in game engine
     def run(self):
@@ -147,6 +239,12 @@ class Game:
         # tick the test timer
         self.test_timer.ticking()
         self.all_sprites.update()
+        if self.player.coins_required <= 0:
+            if self.current_level < len(levels) -1:
+                self.current_level += 1
+                self.change_level(levels[self.current_level])
+            else:
+                pass
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
@@ -163,7 +261,7 @@ class Game:
 
     def draw(self):
         self.screen.fill(BGCOLOR)
-        self.draw_grid()
+        # self.draw_grid()
         self.all_sprites.draw(self.screen)
         # money
         self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
@@ -183,25 +281,26 @@ class Game:
             self.draw_text(self.screen, str(self.player.stamina), 64, DARKRED, 11, 1.25)
         if self.player.sprinting == False:
             self.draw_text(self.screen, str(self.player.stamina), 64, BLACK, 11, 1.25)
+        #projectile
+        self.draw_text(self.screen, str(self.player.has_projectile), 64, BLACK, 15, 1)
          #top text
         self.draw_text(self.screen, "coins:", 20, BLACK, 1, 0.75)
         self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
         self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
         self.draw_text(self.screen, "stamina:", 20, BLACK, 11, 0.75)
+        self.draw_text(self.screen, "has item:", 20, BLACK, 15, 0.75)
         #door text
-        self.draw_text(self.screen, "coins needed", 13, BLACK, 10, 21)
-        self.draw_text(self.screen, str(self.player.coins_required), 20, BLACK, 10.5, 22)
+        self.draw_text(self.screen, "COINS LEFT FOR JOHN:", 30, BLACK, 8, 23)
+        self.draw_text(self.screen, str(self.player.coins_required), 35, BLACK, 17.25, 22.9)
 
         #win text
-        if self.player.coins_required == 0: # if player has no more coins required, show win screen
-            self.screen.fill(BLACK)
-            self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
-            print("win :)")
+        #if self.player.coins_required == 0: # if player has no more coins required, show win screen
+        #    self.screen.fill(BLACK)
+        #    self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
         #lose text
         if self.player.hitpoints == 0: # if player dies, show death screen
             self.screen.fill(BLACK)
             self.draw_text(self.screen, "You died...", 60, RED, 13, 13)
-            print("lose :(")
 
          # draw the timer
         self.draw_text(self.screen, str(self.test_timer.countdown(45)), 24, WHITE, WIDTH/2 - 32, 2)
@@ -221,13 +320,9 @@ class Game:
                  #   self.player.move(dy=-1)
                 #if event.key == pg.K_DOWN:
                  #   self.player.move(dy=1)
-
-    def show_start_screen(self):
-        pass
-
-    def show_go_screen(self):
-        pass
-
+            if event.type == pg.MOUSEBUTTONDOWN:
+             if event.button == 1:  # Left mouse button
+                pass
 
 # Instanciated the game
                 

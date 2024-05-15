@@ -1,9 +1,10 @@
 #This file was created by: Kai Aberin
 
-#Parts of sprinting mecahnic were made with help from ChatGPT
+#Sprinting mecahnic and enemy follow mechanics made with modified code from ChatGPT 
 
 # import modules
 import pygame as pg
+import math
 from pygame.sprite import Sprite
 from settings import *
 from os import path
@@ -80,26 +81,27 @@ class Player(Sprite):
         self.moneybag = 0
         self.status = "none"
 
+        self.has_projectile = False
+
         self.hitpoints = 3
         self.speed = 300
 
         self.last_position = (self.rect.x, self.rect.y)
 
-        # coins required to beat level
         self.coins_required = 20
 
+        #Modified from Chatgpt
         self.sprinting = False
         self.can_sprint = True # Checks if player is able to sprint
         self.stamina = 100
         self.stamina_regen_rate = 1  # Amount of stamina regenerated per frame
         self.sprint_speed_multiplier = 1.75  # Multiplier applied to speed while sprinting
         self.stamina_depletion_rate = 2  # Amount of stamina depleted per frame while sprinting
-
-            
-
+          
     #def move(self, dx=0, dy=0):
      #   self.x += dx
       #  self.y += dy
+
 
     def get_keys(self):
         self.vx, self.vy = 0,0
@@ -120,7 +122,8 @@ class Player(Sprite):
             self.vx *= 0.7071
             self.vy *= 0.7071
 
-        if keys[pg.K_LSHIFT] and self.stamina > 0 and self.can_sprint == True: # if holding left shift, player will sprint
+        #Copied from chatgpt
+        if keys[pg.K_LSHIFT] or keys[pg.K_RSHIFT ]and self.stamina > 0 and self.can_sprint == True: # if holding left shift, player will sprint
             self.sprinting = True
         else:
             self.sprinting = False
@@ -128,6 +131,11 @@ class Player(Sprite):
         if self.sprinting:
             self.vx *= self.sprint_speed_multiplier
             self.vy *= self.sprint_speed_multiplier
+
+        #skip level shortcut for developing
+        if keys[pg.K_RIGHTBRACKET]:
+            self.coins_required = 0
+            print("skipped level")
     
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0,0, 32, 32), 
@@ -234,8 +242,14 @@ class Player(Sprite):
                     if self.moneybag == 0 and self.coins_required == 0: # makes sure coins required does not become negative
                         self.moneybag = self.moneybag
                         self.coins_required = self.coins_required
-
-    
+                if str(hits[0].__class__.__name__) == "StaminaBoost":
+                        self.stamina = 100
+                if str(hits[0].__class__.__name__) == "Winblock":
+                        self.coins_required = 0
+                if str(hits[0].__class__.__name__) == "Enemy":
+                        self.hitpoints = 0
+                if str(hits[0].__class__.__name__) == "Throwobject":
+                        self.has_projectile = True
 
     def update(self):
         # self.rect.x = self.x
@@ -261,6 +275,13 @@ class Player(Sprite):
         self.collide_with_group(self.game.buttonwall03, BUTTONS[2])
         self.collide_with_group(self.game.button03, True)
         self.collide_with_group(self.game.enddoor, CAN_WIN) # if player can win, they can collide and activate end
+        self.collide_with_group(self.game.staminaboost, True)
+        self.collide_with_group(self.game.winblock, True)
+        self.collide_with_group(self.game.enemy, True)
+        if self.has_projectile == True:
+            self.collide_with_group(self.game.throwobject, False)
+        else:
+            self.collide_with_group(self.game.throwobject, True)
 
         self.animate()
         self.get_keys()
@@ -270,6 +291,7 @@ class Player(Sprite):
         if self.rect.x == self.last_position[0] and self.rect.y == self.last_position[1]:
             self.walking == False
 
+        #Modified from chatgpt
         if not self.sprinting and self.stamina < 100:
                 self.stamina += self.stamina_regen_rate
                 # Stamina cannot exceed 100
@@ -279,6 +301,7 @@ class Player(Sprite):
                     self.can_sprint = True
 
         # Deplete stamina while sprinting
+        #Modified from chatgpt
         if self.sprinting:
             self.stamina -= self.stamina_depletion_rate
             # If stamina runs out, player stops sprinting and cannot sprint again until stamina is full
@@ -487,17 +510,129 @@ class Buttonwall03(Sprite):
             game.Player.collide_with_group(self.game.buttonwall03, False)
             print("test")
 
-
 class Enddoor(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.enddoor
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE * 2, TILESIZE * 2))
-        self.image.fill(SLIGHTLYLESSYELLOW)
+        self.image = self.game.john_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+#final release
+
+class Enemy(pg.sprite.Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.enemy
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE * 2, TILESIZE * 2))
+        self.image.fill(DARKRED)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        self.speed = 150
+        self.hitpoints = 5
+
+        if self.hitpoints == 4:
+            self.speed = 90
+        if self.hitpoints == 3:
+            self.speed = 100
+        if self.hitpoints == 2:
+            self.speed = 110
+        if self.hitpoints == 1:
+            self.speed = 120
+        if self.hitpoints == 0:
+            self.kill()
+    
+    #Movement system copied from Chatgpt
+    def update(self):
+        
+        dx = self.game.player.rect.x - self.rect.x
+        dy = self.game.player.rect.y - self.rect.y
+
+        angle = math.atan2(dy, dx)
+
+        # Calculate the velocity components based on the angle
+        vel_x = math.cos(angle) * self.speed
+        vel_y = math.sin(angle) * self.speed
+
+        # Update the enemy's position
+        self.rect.x += vel_x * self.game.dt
+        self.rect.y += vel_y * self.game.dt
+
+        
+
+class StaminaBoost(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.staminaboost
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+class Map:
+    def __init__(self, filename):
+        self.data = []
+        with open(filename, 'rt') as f:
+            for line in f:
+                self.data.append(line.strip())
+        self.tilewidth = len(self.data[0])
+        self.tileheight = len(self.data)
+        self.width = self.tilewidth * TILESIZE
+        self.height = self.tileheight * TILESIZE
+
+class Winblock(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.winblock
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+class Throwobject(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.throwobject
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE * 0.5, TILESIZE * 0.5))
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+#class modified from chatgpt
+class Projectile(pg.sprite.Sprite):
+    def __init__(self, game, x, y):
+        super().__init__()
+        self.groups = game.all_sprites, game.projectile
+        self.game = game
+        self.image = pg.Surface((TILESIZE * 0.5, TILESIZE * 0.5))
+        self.image.fill(YELLOW)  # Set color of the projectile
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 50  # Adjust speed as needed
+
+    def update(self):
+        self.rect.x += self.speed
+        # Check if projectile is out of screen
+        if self.rect.right > WIDTH:
+            self.kill()
