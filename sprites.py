@@ -66,7 +66,7 @@ class Player(Sprite):
         # self.image.fill(GREEN)
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
-        self.vx, self.vy = 0,0
+        #self.vx, self.vy = 0,0
 
         self.current_frame = 0
 
@@ -137,6 +137,25 @@ class Player(Sprite):
             self.coins_required = 0
             print("skipped level")
     
+    #Copied from chatgpt
+    def throw_projectile(self, mouse_pos):
+        # Calculate the angle between the player and the mouse position
+        dx = mouse_pos[0] - self.rect.centerx
+        dy = mouse_pos[1] - self.rect.centery
+        angle = math.atan2(dy, dx)
+
+        # Create a new projectile
+        projectile = Projectile(self.game, self.rect.centerx, self.rect.centery)
+        
+        # Set velocity based on angle
+        projectile.rect.x = self.rect.centerx
+        projectile.rect.y = self.rect.centery
+        projectile.vel = pg.math.Vector2(math.cos(angle), math.sin(angle)) * projectile.speed
+
+        # Add projectile to groups
+        self.game.all_sprites.add(projectile)
+        self.game.projectile.add(projectile)
+
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0,0, 32, 32), 
                                 self.spritesheet.get_image(32,0, 32, 32)]
@@ -152,9 +171,13 @@ class Player(Sprite):
             self.last_update = now
             self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
             bottom = self.rect.bottom
+            x = self.rect.x
+            y = self.rect.y
             self.image = self.standing_frames[self.current_frame]
             self.rect = self.image.get_rect()
             self.rect.bottom = bottom
+            self.rect.x = x
+            self.rect.y = y
 
     def collide_with_walls(self, dir):
         
@@ -626,13 +649,8 @@ class Projectile(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.projectile
         self.game = game
         self.image = pg.Surface((TILESIZE * 0.5, TILESIZE * 0.5))
-        self.image.fill(YELLOW)  # Set color of the projectile
+        self.image.fill(ORANGE)  # Set color of the projectile
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.speed = 50  # Adjust speed as needed
-
-    def update(self):
-        self.rect.x += self.speed
-        # Check if projectile is out of screen
-        if self.rect.right > WIDTH:
-            self.kill()
+        self.vel = 50

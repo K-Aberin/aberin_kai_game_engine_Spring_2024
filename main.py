@@ -239,6 +239,7 @@ class Game:
         # tick the test timer
         self.test_timer.ticking()
         self.all_sprites.update()
+        self.projectile.update()
         if self.player.coins_required <= 0:
             if self.current_level < len(levels) -1:
                 self.current_level += 1
@@ -321,8 +322,8 @@ class Game:
                 #if event.key == pg.K_DOWN:
                  #   self.player.move(dy=1)
             if event.type == pg.MOUSEBUTTONDOWN:
-             if event.button == 1:  # Left mouse button
-                pass
+                if event.button == 1:  # Left mouse button
+                    self.player.throw_projectile(event.pos)  # Pass mouse position to player's throw_projectile method
 
 # Instanciated the game
                 
