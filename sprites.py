@@ -136,6 +136,10 @@ class Player(Sprite):
         if keys[pg.K_RIGHTBRACKET]:
             self.coins_required = 0
             print("skipped level")
+        if keys[pg.K_LEFTBRACKET]:
+            self.coins_required = 20
+            print("gave coins")
+
     
     #Copied from chatgpt
     def throw_projectile(self, mouse_pos):
@@ -273,6 +277,9 @@ class Player(Sprite):
                         self.hitpoints = 0
                 if str(hits[0].__class__.__name__) == "Throwobject":
                         self.has_projectile = True
+                if str(hits[0].__class__.__name__) == "StatusReset":
+                        self.status = "none"
+                        self.has_projectile = False
 
     def update(self):
         # self.rect.x = self.x
@@ -305,6 +312,7 @@ class Player(Sprite):
             self.collide_with_group(self.game.throwobject, False)
         else:
             self.collide_with_group(self.game.throwobject, True)
+        self.collide_with_group(self.game.statusreset, True)
 
         self.animate()
         self.get_keys()
@@ -410,7 +418,7 @@ class Powerup(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(BLUE)
+        self.image = self.game.hammer_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -464,7 +472,7 @@ class Buttonwall01(Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(MAGENTA)
+        self.image = self.game.purplewall_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -493,7 +501,7 @@ class Buttonwall02(Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(ORANGE)
+        self.image = self.game.orangewall_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -522,7 +530,7 @@ class Buttonwall03(Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+        self.image = self.game.greenwall_img
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -554,7 +562,6 @@ class Enemy(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE * 2, TILESIZE * 2))
-        self.image.fill(DARKRED)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -562,6 +569,7 @@ class Enemy(pg.sprite.Sprite):
         self.rect.y = y * TILESIZE
         self.speed = 100
         self.hitpoints = 7
+        self.dead = False
 
     def collide_with_group(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
@@ -592,21 +600,31 @@ class Enemy(pg.sprite.Sprite):
 
         if self.hitpoints == 7:
             self.speed = 100
+            self.image.fill(HP7)
         if self.hitpoints == 6:
             self.speed = 110
+            self.image.fill(HP6)
         if self.hitpoints == 5:
             self.speed = 120
+            self.image.fill(HP5)
         if self.hitpoints == 4:
             self.speed = 130
+            self.image.fill(HP4)
         if self.hitpoints == 3:
             self.speed = 140
+            self.image.fill(HP3)
         if self.hitpoints == 2:
-            self.speed = 150
-        if self.hitpoints == 1:
             self.speed = 160
+            self.image.fill(HP2)
+        if self.hitpoints == 1:
+            self.speed = 180
+            self.image.fill(HP1)
         if self.hitpoints <= 0:
             self.kill()
-        
+            print("dead")
+            self.game.player.moneybag = 20
+            self.dead = True
+            self.game.boss_dead = True
 
 class StaminaBoost(Sprite):
     def __init__(self, game, x, y):
@@ -651,12 +669,14 @@ class Throwobject(Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE * 0.5, TILESIZE * 0.5))
-        self.image.fill(YELLOW)
+        self.image.fill(ORANGE)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+
 
 #Entire class modified from chatgpt
 class Projectile(pg.sprite.Sprite):
@@ -688,3 +708,16 @@ class Projectile(pg.sprite.Sprite):
         if hits:
                 if str(hits[0].__class__.__name__) == "Passwall":
                     self.kill()
+
+class StatusReset(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.statusreset
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE

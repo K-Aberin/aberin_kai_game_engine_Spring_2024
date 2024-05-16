@@ -73,6 +73,13 @@ class Game:
         self.wallcracked_img = pg.image.load(path.join(self.img_folder, 'wallbroken.jpg')).convert_alpha()
         self.coin_img = pg.image.load(path.join(self.img_folder, 'coin.png')).convert_alpha()
         self.john_img = pg.image.load(path.join(self.img_folder, 'john.png')).convert_alpha()
+        self.hammer_img = pg.image.load(path.join(self.img_folder, 'hammer.png')).convert_alpha()
+        self.purplewall_img = pg.image.load(path.join(self.img_folder, 'wallpurple.png')).convert_alpha()
+        self.greenwall_img = pg.image.load(path.join(self.img_folder, 'walgreens.png')).convert_alpha()
+        self.orangewall_img = pg.image.load(path.join(self.img_folder, 'wallorange.png')).convert_alpha()
+        self.boss_img = pg.image.load(path.join(self.img_folder, 'boss.jpg')).convert_alpha()
+
+        self.boss_dead = False
 
     # Load save data
     def load_data(self):
@@ -83,6 +90,7 @@ class Game:
         #        self.map_data.append(line)
         self.map = Map(path.join(game_folder, LEVEL_0)) # starting level
 
+    
     def change_level(self, lvl):
 
         level_file = levels[self.current_level]
@@ -107,6 +115,7 @@ class Game:
         self.player.status = "none"
         self.player.stamina = 100
         self.player.coins_required = 20
+        self.player.has_projectile = False
     
         with open(path.join(game_folder, level_file), 'rt') as f:
          for row, line in enumerate(f):
@@ -149,6 +158,8 @@ class Game:
                     Winblock(self, col, row)
                 if tile == 'T':
                     Throwobject(self, col, row)
+                if tile == 'N':
+                    StatusReset(self, col, row)
         print("currently on level",self.current_level)
     
     def new(self):
@@ -176,6 +187,7 @@ class Game:
          self.winblock = pg.sprite.Group()
          self.throwobject = pg.sprite.Group()
          self.projectile = pg.sprite.Group()
+         self.statusreset = pg.sprite.Group()
          # self.player = Player(self, col, row)
          #for x in range(10, 20):
             #  Wall(self, x, 5)
@@ -214,13 +226,15 @@ class Game:
                 if tile == 'e':
                     Enddoor(self, col, row)
                 if tile == '&':
-                    Enemy(self, col, row,)
+                    self.enemy = Enemy(self, col, row,)
                 if tile == 's':
                     StaminaBoost(self, col, row)
                 if tile == 'W':
                     Winblock(self, col, row)
                 if tile == 'T':
                     Throwobject(self, col, row)
+                if tile == 'N':
+                    StatusReset(self, col, row)
             
 
 # Run method in game engine
@@ -265,7 +279,10 @@ class Game:
         # self.draw_grid()
         self.all_sprites.draw(self.screen)
         # money
-        self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
+        if self.player.moneybag >= 20:
+            self.draw_text(self.screen, str(self.player.moneybag), 64, WHITE, 1, 1)
+        else:
+            self.draw_text(self.screen, str(self.player.moneybag), 64, BLACK, 1, 1)
          #hp number
         self.draw_text(self.screen, str(self.player.hitpoints), 64, GREEN, 3.5, 1)
         if self.player.hitpoints == 2:
@@ -295,9 +312,9 @@ class Game:
         self.draw_text(self.screen, str(self.player.coins_required), 35, BLACK, 17.25, 22.9)
 
         #win text
-        #if self.player.coins_required == 0: # if player has no more coins required, show win screen
-        #    self.screen.fill(BLACK)
-        #    self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
+        if self.player.coins_required == 0 and self.boss_dead == True: # if player has no more coins required, show win screen
+            self.screen.fill(BLACK)
+            self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
         #lose text
         if self.player.hitpoints == 0: # if player dies, show death screen
             self.screen.fill(BLACK)
