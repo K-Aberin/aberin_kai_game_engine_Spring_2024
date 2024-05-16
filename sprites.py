@@ -1,6 +1,6 @@
 #This file was created by: Kai Aberin
 
-#Sprinting mecahnic and enemy follow mechanics made with modified code from ChatGPT 
+#Sprinting mechanic,enemy follow mechanic, and projectile throwing mechanic made with modified code from ChatGPT 
 
 # import modules
 import pygame as pg
@@ -38,6 +38,7 @@ game_folder = path.dirname(__file__)
 img_folder = path.join(game_folder, 'images')
 
 #corresponds to each color button
+#0 = purple, 1 = orange, 2 = green
 BUTTONS = [False, False, False]
 
 CAN_WIN = False
@@ -276,9 +277,9 @@ class Player(Sprite):
                 if str(hits[0].__class__.__name__) == "Enemy":
                         self.hitpoints = 0
                 if str(hits[0].__class__.__name__) == "Throwobject":
-                        self.has_projectile = True
+                        self.has_projectile = True 
                 if str(hits[0].__class__.__name__) == "StatusReset":
-                        self.status = "none"
+                        self.status = "none" # resets player status
                         self.has_projectile = False
 
     def update(self):
@@ -298,7 +299,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.slowdowns, True)
         self.collide_with_group(self.game.passwalls, True)
         self.collide_with_group(self.game.dies, True)
-        self.collide_with_group(self.game.buttonwall01, BUTTONS[0])
+        self.collide_with_group(self.game.buttonwall01, BUTTONS[0]) #checks if corresponding button is pressed, if it has, player breaks wall
         self.collide_with_group(self.game.button01, True)
         self.collide_with_group(self.game.buttonwall02, BUTTONS[1])
         self.collide_with_group(self.game.button02, True)
@@ -308,6 +309,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.staminaboost, True)
         self.collide_with_group(self.game.winblock, True)
         self.collide_with_group(self.game.enemy, True)
+        #player cannot collect projectiles if they are already carrying one
         if self.has_projectile == True:
             self.collide_with_group(self.game.throwobject, False)
         else:
@@ -319,9 +321,6 @@ class Player(Sprite):
 
         self.last_position = (self.rect.x, self.rect.y)
 
-        if self.rect.x == self.last_position[0] and self.rect.y == self.last_position[1]:
-            self.walking == False
-
         #Modified from chatgpt
         if not self.sprinting and self.stamina < 100:
                 self.stamina += self.stamina_regen_rate
@@ -329,18 +328,28 @@ class Player(Sprite):
                 if self.stamina > 100:
                     self.stamina = 100
                 if self.stamina == 100:
+                    self.sprint_speed_multiplier = 1.75
                     self.can_sprint = True
 
-        # Deplete stamina while sprinting
         #Modified from chatgpt
-        if self.sprinting:
+        # Deplete stamina while sprinting
+        if self.sprinting and self.can_sprint == True:
             self.stamina -= self.stamina_depletion_rate
             # If stamina runs out, player stops sprinting and cannot sprint again until stamina is full
             if self.stamina <= 0:
                 self.stamina = 0
+                self.can_sprint = False
+            # If the player tries to sprint but their stamina is 0, they stop sprinting
+        if self.sprinting and self.stamina == 0: 
+                self.sprint_speed_multiplier = 1
                 self.sprinting = False
                 self.can_sprint = False
+                print ("cannot sprint")
+        # if plaer is sprinting but they arent allowed to and their stamina is less than 100, it stops them from sprinting
+        if self.sprinting and self.can_sprint == False and self.stamina <= 100:
+            self.sprinting = False
 
+        # player has the amount of coins required, they can activate the end door
         if self.moneybag >= self.coins_required:
             CAN_WIN == True
 
@@ -479,10 +488,6 @@ class Buttonwall01(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
-        if BUTTONS[0] == True:
-            game.Player.collide_with_group(self.game.buttonwall01, False)
-            print("test")
-
 class Button02(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.button02
@@ -508,10 +513,6 @@ class Buttonwall02(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
-        if BUTTONS[1] == True:
-            game.Player.collide_with_group(self.game.buttonwall02, False)
-            print("test")
-
 class Button03(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.button03
@@ -536,10 +537,6 @@ class Buttonwall03(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-
-        if BUTTONS[1] == True:
-            game.Player.collide_with_group(self.game.buttonwall03, False)
-            print("test")
 
 class Enddoor(Sprite):
     def __init__(self, game, x, y):
@@ -569,8 +566,8 @@ class Enemy(pg.sprite.Sprite):
         self.rect.y = y * TILESIZE
         self.speed = 100
         self.hitpoints = 7
-        self.dead = False
 
+    #if the enemy collides with a projectile, it subtracts 1 hitpoint
     def collide_with_group(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
@@ -598,6 +595,7 @@ class Enemy(pg.sprite.Sprite):
     
         self.collide_with_group(self.game.projectile, True)
 
+        #changes color and speed depending on how much hp enemy has
         if self.hitpoints == 7:
             self.speed = 100
             self.image.fill(HP7)
@@ -623,7 +621,6 @@ class Enemy(pg.sprite.Sprite):
             self.kill()
             print("dead")
             self.game.player.moneybag = 20
-            self.dead = True
             self.game.boss_dead = True
 
 class StaminaBoost(Sprite):
@@ -676,8 +673,6 @@ class Throwobject(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
-
-
 #Entire class modified from chatgpt
 class Projectile(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -685,10 +680,10 @@ class Projectile(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.projectile
         self.game = game
         self.image = pg.Surface((TILESIZE * 0.5, TILESIZE * 0.5))
-        self.image.fill(ORANGE)  # Set color of the projectile
+        self.image.fill(ORANGE)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = 5  # Adjust speed as needed
+        self.speed = 5 
         self.vel = 5
 
     def update(self):
@@ -701,6 +696,7 @@ class Projectile(pg.sprite.Sprite):
                 self.rect.bottom < 0 or self.rect.top > HEIGHT:
             self.kill()
 
+        #able to break passwalls
         self.collide_with_group(self.game.passwalls, True)
 
     def collide_with_group(self, group, kill):
@@ -708,6 +704,7 @@ class Projectile(pg.sprite.Sprite):
         if hits:
                 if str(hits[0].__class__.__name__) == "Passwall":
                     self.kill()
+                    #deletes self upon breaking a passwall
 
 class StatusReset(Sprite):
     def __init__(self, game, x, y):

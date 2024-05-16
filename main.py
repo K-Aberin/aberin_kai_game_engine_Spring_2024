@@ -96,6 +96,7 @@ class Game:
         level_file = levels[self.current_level]
         self.map = Map(path.join(game_folder, level_file))
 
+        #removes all sprites
         self.all_sprites.empty()
         self.walls.empty()
         self.passwalls.empty()
@@ -108,7 +109,7 @@ class Game:
         self.powerups.empty()
         self.throwobject.empty()
 
-        # reset criteria for changing level
+        # reset player stats
         self.player.moneybag = 0
         self.player.speed = 300
         self.player.hitpoints = 3
@@ -306,12 +307,13 @@ class Game:
         self.draw_text(self.screen, "hp:", 20, BLACK, 3.5, 0.75)
         self.draw_text(self.screen, "status:", 40, BLACK, 6, 0.75)
         self.draw_text(self.screen, "stamina:", 20, BLACK, 11, 0.75)
-        self.draw_text(self.screen, "has item:", 20, BLACK, 15, 0.75)
+        self.draw_text(self.screen, "has a projectile:", 20, BLACK, 15, 0.75)
         #door text
         self.draw_text(self.screen, "COINS LEFT FOR JOHN:", 30, BLACK, 8, 23)
         self.draw_text(self.screen, str(self.player.coins_required), 35, BLACK, 17.25, 22.9)
 
         #win text
+        #makes sure boss has been killed to show win screen
         if self.player.coins_required == 0 and self.boss_dead == True: # if player has no more coins required, show win screen
             self.screen.fill(BLACK)
             self.draw_text(self.screen, "YOU WIN!", 60, WHITE, 13, 13)
