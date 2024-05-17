@@ -618,7 +618,7 @@ class Enemy(pg.sprite.Sprite):
             self.speed = 180
             self.image.fill(HP1)
         if self.hitpoints <= 0:
-            self.kill()
+            self.kill() # removes boss
             print("dead")
             self.game.player.moneybag = 20
             self.game.boss_dead = True

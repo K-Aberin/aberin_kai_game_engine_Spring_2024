@@ -5,7 +5,9 @@
 
 # alpha: kill blocks, breakable walls, objects that slow player down
 
-# beta: added add buttons + button walls, shift & stamina, end door
+# beta: added add buttons + button walls, sprint & stamina, end door
+
+# final release: added collectable and throwable objects, boss enemy, level changing system
 
 # import necessary modules
 # my first source control edit
@@ -253,8 +255,10 @@ class Game:
     def update(self):
         # tick the test timer
         self.test_timer.ticking()
+        #updates all sprites
         self.all_sprites.update()
         self.projectile.update()
+        #changes level if player has enough coins
         if self.player.coins_required <= 0:
             if self.current_level < len(levels) -1:
                 self.current_level += 1
