@@ -110,6 +110,7 @@ class Game:
         self.buttonwall03.empty()
         self.powerups.empty()
         self.throwobject.empty()
+        self.enddoor.empty()
 
         # reset player stats
         self.player.moneybag = 0
